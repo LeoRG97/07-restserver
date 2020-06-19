@@ -3,9 +3,11 @@ const bcrypt = require('bcrypt');
 const _ = require('underscore');
 const Usuario = require('../models/usuario');
 
+const { verifyToken, verifyAdminRole } = require('../middlewares/authentication');
+
 const app = express();
 
-app.get('/usuario', function (req, res) {
+app.get('/usuario', verifyToken, function (req, res) {
 
     let desde = req.query.desde || 0;
     desde = Number(desde);
@@ -37,7 +39,7 @@ app.get('/usuario', function (req, res) {
 
 });
 
-app.post('/usuario', function (req, res) {
+app.post('/usuario', [verifyToken, verifyAdminRole], function (req, res) {
 
     let body = req.body;
 
@@ -68,7 +70,7 @@ app.post('/usuario', function (req, res) {
 
 });
 
-app.put('/usuario/:id', function (req, res) {
+app.put('/usuario/:id', [verifyToken, verifyAdminRole], function (req, res) {
 
     let id = req.params.id;
     let body = _.pick(req.body, ['nombre', 'email', 'img', 'role', 'estado']);
@@ -96,7 +98,7 @@ app.put('/usuario/:id', function (req, res) {
 
 });
 
-app.delete('/usuario/:id', function (req, res) {
+app.delete('/usuario/:id', [verifyToken, verifyAdminRole], function (req, res) {
 
     let id = req.params.id;
 
@@ -112,7 +114,7 @@ app.delete('/usuario/:id', function (req, res) {
         if (!usuarioDB) {
             return res.status(400).json({
                 ok: false,
-                error: {
+                err: {
                     message: 'Usuario no encontrado'
                 }
             });
